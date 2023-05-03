@@ -1,7 +1,6 @@
-import type { Component } from "solid-js";
-
-import logo from "./logo.svg";
-import styles from "./App.module.css";
+import { createEffect, type Component, on } from "solid-js";
+import htmlpdf from "html2pdf.js";
+import { RefProvider, useRef } from "./refcontext";
 
 const NavLinks = [
   {
@@ -27,7 +26,7 @@ const NavLinks = [
 ];
 
 const headerNav = (
-  <div class="container flex flex-col items-start justify-between p-6 mx-auto md:flex-row">
+  <div class="container flex flex-col items-start justify-between p-6 mx-auto md:flex-row md:py-1 md:my-1 md:gap-row-1">
     <a class="flex items-center mb-4 font-medium text-gray-900 title-font md:mb-0">
       <h2>Akash Sky</h2>
     </a>
@@ -45,7 +44,7 @@ const headerNav = (
 
 const SectionHeader = ({ text }: { text: string }) => {
   return (
-    <h5 class="font-semibold  rounded-xl bg-gray-900 text-white w-fit py-2 px-10">
+    <h5 class="font-semibold  rounded-xl bg-gray-900 text-white w-fit py-2 px-10 md:px-2 md:py-1 md:text-black md:bg-transparent">
       {text}
     </h5>
   );
@@ -53,11 +52,20 @@ const SectionHeader = ({ text }: { text: string }) => {
 
 const ResumeHeaderTitle = (props: { text?: string }) => {
   const { text = "Sebastian Mititelu" } = props;
-  return <h1 class="text-4xl font-semibold">{text}</h1>;
+  const [test, { setDocRef }] = useRef();
+
+  return (
+    <h1
+      class="text-4xl font-semibold md:text-xl flex-1"
+      onClick={() => generatePDF(test())}
+    >
+      {text}
+    </h1>
+  );
 };
 const ResumeHeaderRole = (props: { text?: string }) => {
   const { text = "Software / React Developer" } = props;
-  return <h3 class="text-2xl font-thin">{text}</h3>;
+  return <h3 class="text-2xl font-thin md:text-sm w-fit">{text}</h3>;
 };
 
 const ResumeHeaderContact = (props: {
@@ -76,11 +84,11 @@ const ResumeHeaderContact = (props: {
   const fieldKeyList = Object.keys(fieldMap);
   return (
     <section class="container flex flex-col align-end">
-      <h5 class="text-end font-semibold">{text}</h5>
+      <h5 class="text-end font-semibold md:text-sm">{text}</h5>
       {fieldKeyList.length > 0 &&
         fieldKeyList.map((fieldKey) => {
           return (
-            <p class="text-end italic">
+            <p class="text-end italic md:text-xs">
               {fieldKey}{" "}
               <a href={fieldMap[fieldKey]} class="not-italic">
                 {fieldMap[fieldKey]}
@@ -100,18 +108,18 @@ const ResumeHeaderDescription = (props: {
     text = "Summary",
     paragraphList = [
       `I am a simple programmer, I like my code functional, typed, clean & reusable & prefer working with people that are solution-oriented, help  learn from each other, it is just how I work.`,
-      `My previous experience has helped me gain both independent and collaborative work in high-paced environments in developing Web & Cross-Platform Software full-stack with modern technologies. My go-to stack being Next.JS, Prisma,GraphQL, PostgresSOL or Mongo & Docker in either AWS or GCE.`,
+      `My previous experience has helped me gain both independent and collaborative work in high-paced environments in developing Web & Cross-Platform Software full-stack with modern technologies.`,
+      `My go-to stack is Next.JS, Prisma,GraphQL, PostgresSOL or Mongo & Docker in either AWS or GCE.`,
     ],
   } = props;
   return (
-    <section class="container flex flex-col rounded-3xl py-2 mx-auto my-6 px-4  bg-slate-200 w-10/12">
+    <section class="container flex flex-col rounded-3xl py-8 mx-auto my-6 px-8  bg-slate-200 w-10/12 md:w-full md:px:2 md:py-2">
       <SectionHeader text={text} />
       {paragraphList.length > 0 &&
         paragraphList.map((el) => {
           return (
             <>
-              <p>{el}</p>
-              <br />
+              <p class="py-4 md:text-xs md:py-2">{el}</p>
             </>
           );
         })}
@@ -193,20 +201,22 @@ const WorkXP = (
         {jobList.length > 0 &&
           jobList.map((job) => {
             return (
-              <section class={`py-2 mx-2 my-2 px-1 ${subContainerClass}`}>
+              <section
+                class={`py-2 mx-2 my-2 px-1  md:flex-col md:w-full md:py-1 md:px-1 md:my-1 md:mx-1 ${subContainerClass}`}
+              >
                 {typeof job === "string" ? (
-                  <h6>{job}</h6>
+                  <h6 class="md:text-sm font-bold">{job}</h6>
                 ) : (
                   <>
                     <h6 class="font-bold">
                       {job.role}, {job.company}
                     </h6>
-                    <p class="italic">
+                    <p class="italic md:text-sm">
                       {job.start} to {job.end}
                     </p>
                     {Array.isArray(job.outcomeList) &&
                       job.outcomeList.length > 0 && (
-                        <ul class="list-disc w-full flex flex-wrap flex-col px-4 py-2">
+                        <ul class="list-disc w-full flex flex-wrap flex-col px-4 py-2 md:text-sm md:px-2 md:py-1">
                           {job.outcomeList.map((outcome) => {
                             return <li>{outcome}</li>;
                           })}
@@ -285,10 +295,27 @@ const relevantCertList = [
   "LinkedIn - Picking the Right Chart - Charts with D3, HTML, JavaScript & CSS",
 ];
 
-const App: Component = () => {
+function generatePDF(ref) {
+  // Choose the element that your content will be rendered to.
+  console.log("PRINT ME");
+  console.log(ref);
+
+  // Choose the element and save the PDF for your user.
+  htmlpdf().from(ref).save();
+}
+
+const MainApp = (props) => {
+  const { docRef } = props;
+  const [test, { setDocRef }] = useRef();
+
+  createEffect(() => {
+    console.log(docRef, test);
+    setDocRef(docRef);
+  });
+
   return (
-    <div class="w-screen h-full px-20 py-5">
-      <header class="w-full mt-5 text-gray-700 bg-white border-t border-gray-100 shadow-sm body-font">
+    <>
+      <header class="w-full mt-5 md:mt-1 text-gray-700 bg-white border-t border-gray-100 shadow-sm body-font">
         <div class=" flex flex-row justify-between w-full">
           <div class="flex flex-col">
             <ResumeHeaderTitle />
@@ -300,7 +327,10 @@ const App: Component = () => {
       </header>
       <main>
         <section class="w-full flex flex-col">
-          <WorkXP subContainerClass="flex-row w-1/4" extraClass="flex-row gap-row-4 justify-between" />
+          <WorkXP
+            subContainerClass="flex-row w-1/4 flex-wrap"
+            extraClass="flex-row gap-row-4 justify-between"
+          />
         </section>
         <div class="flex flex-wrap w-full">
           <section class="flex flex-col w-1/2">
@@ -319,6 +349,23 @@ const App: Component = () => {
           />
         </section>
       </main>
+      <footer>
+        <h6 class="text-center italic md:text-sm">
+          References available upon request
+        </h6>
+      </footer>
+    </>
+  );
+};
+
+const App: Component = () => {
+  let docRef;
+
+  return (
+    <div class="w-screen h-full px-20 py-5 md:px-5" ref={docRef}>
+      <RefProvider docRef={null}>
+        <MainApp docRef={docRef} />
+      </RefProvider>
     </div>
   );
 };
