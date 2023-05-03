@@ -18,6 +18,8 @@
     "vite-plugin-solid": "^2.5.0"
   },
   "dependencies": {
+    "html2pdf.js": "^0.10.1",
+    "print.js": "^1.0.18",
     "solid-js": "^1.6.10"
   }
 }
